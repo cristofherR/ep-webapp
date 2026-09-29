@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="EA">
+  <rect width="512" height="512" rx="96" fill="#1F3460"/>
+  <rect x="64" y="64" width="384" height="384" rx="64" fill="#0E7C70"/>
+  <text x="256" y="300" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif"
+        font-size="200" font-weight="700" fill="#ffffff">EA</text>
+</svg>

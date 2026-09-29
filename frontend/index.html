@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es" data-layout="mobile">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>EA · WebApp MEL</title>
+  <meta name="theme-color" content="#1F3460" />
+  <meta name="description" content="Web de equipo MEL · Efecto Áncash" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles/tokens.css" />
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- La cabecera de verdad (.view-head) va dentro de cada vista, para que viaje con ella.
+         Sin barra flotante: el layout (móvil/escritorio) se detecta solo por el ancho de
+         pantalla, y "Cerrar sesión" vive al final de Inicio. -->
+    <nav class="nav" id="nav" aria-label="Navegación principal"></nav>
+
+    <!-- El ícono de "Cerrar sesión" (solo escritorio) va DENTRO de la cabecera de cada
+         vista, al lado derecho inmediato del logo Efecto Áncash. En móvil la salida vive
+         al final de la vista Inicio. (Antes era una barra aparte; ya no existe.) -->
+
+    <main class="view" id="view" tabindex="-1"></main>
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toast-root" aria-live="polite"></div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

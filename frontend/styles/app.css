@@ -1,0 +1,645 @@
+/* app.css — base móvil (principal) + estilo escritorio (secundario).
+   Un solo código para ambos. El layout se conmuta con [data-layout] en <html>
+   (lo fija app.js: forzado por el toggle o por el ancho de pantalla). */
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font); font-size:var(--fs-md); line-height:var(--lh);
+  color:var(--text); background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 60%,white);outline-offset:2px;border-radius:6px}
+
+/* ============================== APP SHELL ============================== */
+.app{
+  min-height:100dvh;
+  display:flex; flex-direction:column;
+  max-width:var(--content-max); margin:0 auto; background:var(--bg);
+}
+
+/* ------------------------------ Topbar ------------------------------ */
+.topbar{
+  position:sticky; top:0; z-index:20;
+  min-height:var(--topbar-h);
+  display:flex; align-items:center; gap:var(--sp-3);
+  padding:var(--sp-3) var(--sp-4);
+  background:var(--accent); color:#fff;
+  box-shadow:var(--sh-1);
+}
+.topbar{border-radius:0 0 var(--r-md) var(--r-md)}
+.topbar__lead{flex:1; min-width:0; display:flex; align-items:center}
+.topbar__title{font-size:var(--fs-lg); font-weight:var(--fw-b); letter-spacing:.2px}
+.topbar__actions{display:flex; align-items:center; gap:var(--sp-2)}
+/* La barra superior (ícono de "Cerrar sesión" arriba a la derecha) solo existe en
+   escritorio y con sesión abierta. Ojo: .topbar trae display:flex propio, así que se
+   oculta con un selector de id (#topbar) — el atributo [hidden] no bastaría. */
+#topbar{display:none}
+html[data-layout="desktop"]:not([data-auth="login"]) #topbar{display:flex; align-items:center}
+
+/* -------- Portada: header con saludo + identidad + logo (v1) -------- */
+.hero{display:flex; align-items:center; gap:var(--sp-3); width:100%}
+.hero__left{flex:1; min-width:0}
+.hero__saludo{display:flex; align-items:center; gap:6px; font-size:var(--fs-sm); color:rgba(255,255,255,.92)}
+.hero__saludo svg{width:17px; height:17px}
+.hero__name{font-size:var(--fs-lg); font-weight:var(--fw-b); color:#fff; line-height:1.15; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.hero__rol{font-size:var(--fs-xs); color:rgba(255,255,255,.78); margin-top:2px}
+.hero__logo{display:flex; align-items:center; flex:0 0 auto; padding-left:var(--sp-2)}
+.hero__logoimg{display:block; height:45px; width:auto; max-width:180px} /* móvil: +50% (30 → 45) */
+.icon-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:var(--tap); height:var(--tap); border:0; border-radius:var(--r-pill);
+  background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+}
+.icon-btn:hover{background:rgba(255,255,255,.28)}
+
+/* ------------------------------ Contenido ------------------------------ */
+.view{
+  flex:1;
+  padding:var(--sp-4);
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + var(--sp-4));
+}
+
+/* --- Deslizamiento lateral entre vistas (solo móvil) ---
+   El contenido sigue el dedo y entra la vista vecina (estilo Instagram).
+   El recorte horizontal lo hace .app mientras dura el gesto, para que ni la
+   vista que sale ni la que entra se salgan del ancho de la pantalla. */
+body{overscroll-behavior-x:none}
+.view{position:relative}
+.app.is-swiping{overflow-x:clip}
+
+/* ---------- Cabecera anclada a cada vista ----------
+   Va DENTRO de .view (con márgenes negativos para ocupar todo el ancho),
+   así se desplaza junto a la vista durante el deslizamiento lateral. */
+.view-head{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; gap:var(--sp-3);
+  min-height:var(--topbar-h);
+  margin:calc(-1 * var(--sp-4)) calc(-1 * var(--sp-4)) var(--sp-4);
+  padding:var(--sp-3) var(--sp-4);
+  background:var(--accent); color:#fff;
+  border-radius:0 0 var(--r-md) var(--r-md);
+  box-shadow:var(--sh-1);
+}
+.view-head__lead{flex:1; min-width:0; display:flex; align-items:center}
+/* Acciones de la cabecera: el ícono de "Cerrar sesión" (solo escritorio), pegado a la
+   derecha inmediata del logo Efecto Áncash. En móvil no se muestra. */
+.view-head__actions{display:flex; align-items:center; gap:var(--sp-2); flex:0 0 auto}
+#logout-btn{display:none}
+html[data-layout="desktop"]:not([data-auth="login"]) #logout-btn{display:inline-flex}
+
+/* Barra superior propia: eliminada. El ícono de "Cerrar sesión" (solo escritorio) vive
+   dentro de la cabecera de cada vista, al lado del logo; en móvil, al final de Inicio. */
+
+/* Rueda de "cargando" de la portada de acceso */
+.spin{width:18px; height:18px; border-radius:50%; display:inline-block;
+  border:2px solid rgba(255,255,255,.32); border-top-color:#fff;
+  animation:ea-spin .7s linear infinite}
+@keyframes ea-spin{to{transform:rotate(360deg)}}
+/* Aviso de carga de la portada de acceso: ocupa el CENTRO de la pantalla y solo
+   se muestra al pulsar "Ingresar" (el atributo [hidden] no basta si la clase trae
+   display:flex, por eso el selector explícito). */
+.login-stage__load{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:var(--sp-2);
+  font-size:var(--fs-md); color:#fff; text-shadow:0 1px 8px rgba(0,0,0,.75); pointer-events:none}
+.login-stage__load[hidden]{display:none}
+.login--busy{opacity:.55; pointer-events:none}
+.swipe-ghost{
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  padding:inherit; overflow:hidden;
+  background:var(--bg); pointer-events:none; will-change:transform;
+}
+@keyframes ea-slide-in-right{from{transform:translate3d(26%,0,0);opacity:.35}to{transform:translate3d(0,0,0);opacity:1}}
+@keyframes ea-slide-in-left {from{transform:translate3d(-26%,0,0);opacity:.35}to{transform:translate3d(0,0,0);opacity:1}}
+.view--from-right{animation:ea-slide-in-right .18s cubic-bezier(.22,.61,.36,1)}
+.view--from-left {animation:ea-slide-in-left  .18s cubic-bezier(.22,.61,.36,1)}
+
+/* ------------------------------ Nav (móvil: inferior) ------------------------------ */
+/* Orden de la barra inferior (izq→der): el del DOM/NAV — Historial · Indicadores ·
+   Actividades · Inicio(centro) · Reportes · Incidencias · Calendario. */
+.nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:30;
+  height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  display:flex; align-items:center; justify-content:space-around;
+  background:var(--surface); border-top:1px solid var(--line);
+  box-shadow:0 -2px 10px rgba(16,24,40,.06);
+}
+.nav__item{
+  position:relative;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  min-width:var(--tap); min-height:var(--tap); padding:var(--sp-1);
+  background:none; border:0; cursor:pointer; color:var(--icono);
+  border-radius:var(--r-sm);
+}
+.nav__item svg{width:var(--nav-icon); height:var(--nav-icon); display:block; transition:transform .15s ease}
+.nav__item[aria-current="page"]{color:var(--accent)}
+.nav__item[aria-current="page"] svg{transform:scale(1.3915)} /* crece +39.15% (26.5% + 10% pedido) */
+.nav__label{font-size:10px; line-height:1; color:var(--muted)}
+/* Móvil: barra inferior solo con íconos (sin etiquetas). En escritorio el sidebar SÍ muestra labels. */
+html[data-layout="mobile"] .nav__label{display:none}
+.nav__badge{
+  position:absolute; transform:translate(14px,-16px);
+  background:var(--morado); color:#fff; font-size:9px; font-weight:var(--fw-b);
+  border-radius:var(--r-pill); padding:1px 5px; line-height:1.2;
+}
+
+/* -------- Actividades (POA) · diseño móvil -------- */
+/* Cabecera: flecha en círculo blanco + título (fondo = acento de sección, #0E7C70). */
+.poa-head{display:flex; align-items:center; gap:var(--sp-3); width:100%; min-width:0}
+.poa-back{
+  flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border:0; border-radius:var(--r-pill);
+  background:#fff; color:var(--accent); cursor:pointer;
+}
+.poa-title{font-size:var(--fs-lg); font-weight:var(--fw-b); color:#fff; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+html[data-layout="desktop"] .poa-back{display:none}   /* la flecha es de la vista teléfono */
+
+/* Filtros: contenedor gris claro; fila 1 año/mes/territorio · fila 2 componente/estado/CT · fila 3 limpiar. */
+.poa-filtros{background:#F1F3F4; border:1px solid #E2E6E8; border-radius:var(--r-md); padding:var(--sp-3); display:grid; gap:var(--sp-2)}
+.poa-filtros__row{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-2); align-items:center}
+.poa-filtros__row--end{display:flex; justify-content:flex-end}
+.poa-sel{position:relative; display:block; min-width:0}
+.poa-sel select{
+  appearance:none; -webkit-appearance:none; width:100%;
+  background:#fff; border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:8px 24px 8px 9px; font-size:var(--fs-xs); font-weight:var(--fw-m); color:var(--text);
+  text-overflow:ellipsis;
+}
+.poa-sel::after{
+  content:""; position:absolute; right:9px; top:50%; width:6px; height:6px;
+  border-right:2px solid #6b7280; border-bottom:2px solid #6b7280;
+  transform:translateY(-70%) rotate(45deg); pointer-events:none;
+}
+.poa-clear{
+  justify-self:end; display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border:1px solid var(--line); border-radius:var(--r-pill);
+  background:#fff; color:#666; font-size:15px; line-height:1; cursor:pointer;
+}
+.poa-clear:hover{background:var(--surface-3)}
+
+/* Tarjetas: borde lateral verde, cabecera cian, etiquetas, puntos y flecha. */
+.poa-list{margin-top:var(--sp-3)}
+.poa-card{
+  background:#fff; border:1px solid var(--line); border-left:6px solid #4A8B3B;
+  border-radius:var(--r-md); box-shadow:var(--sh-1); overflow:hidden; text-align:left;
+}
+.poa-card + .poa-card{margin-top:var(--sp-3)}
+.poa-card__head{background:#C2F0EE; color:#123b3a; font-weight:var(--fw-b); padding:10px var(--sp-3); text-align:left}
+/* Etiquetas alineadas a la IZQUIERDA + flecha a la derecha. */
+.poa-card__body{display:grid; grid-template-columns:1fr auto; gap:var(--sp-3); align-items:center; padding:var(--sp-3) var(--sp-3) 0}
+.poa-card__tags{display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:flex-start}
+/* Puntos de estado: franja completa al PIE de la tarjeta, centrados. */
+.poa-card__dots{display:flex; flex-wrap:wrap; gap:4px; justify-content:center; align-items:center; min-height:10px; padding:10px var(--sp-3) var(--sp-3)}
+.poa-card__go{
+  width:38px; height:38px; border:0; border-radius:var(--r-pill);
+  background:var(--surface-3); color:var(--text-2); cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.poa-card__go:hover{background:var(--line); color:var(--text)}
+
+/* -------- Portada: métricas (2 apiladas + 1 grande) -------- */
+.metrics{display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-3); align-items:stretch}
+.metrics__col{display:flex; flex-direction:column; gap:var(--sp-3)}
+.metric{flex:1; background:var(--surface-3); border-radius:var(--r-md); padding:var(--sp-3);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:4px}
+.metric__n{font-size:var(--fs-2xl); font-weight:var(--fw-b); line-height:1}
+.metric--big .metric__n{color:var(--navy); font-size:34px}
+.metric__l{font-size:var(--fs-xs); color:var(--text-2)}
+
+/* -------- Portada: grid de 6 accesos (2 x 3) -------- */
+.jump{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-3)}
+.jump__btn{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+  min-height:96px; padding:var(--sp-3) 6px; background:var(--surface-3); border:0; border-radius:var(--r-lg);
+  cursor:pointer; color:var(--text-2)}
+.jump__btn svg{width:26px; height:26px; color:#6C757D}
+.jump__btn span{font-size:var(--fs-xs); font-weight:var(--fw-m); color:var(--text-2); text-align:center; line-height:1.1}
+.jump__btn:hover{background:color-mix(in srgb,var(--surface-3) 72%,var(--accent))}
+
+/* -------- Portada: Próximas actividades (tabla) -------- */
+.pta__title{font-weight:var(--fw-b); margin-bottom:var(--sp-2)}
+.pta__head,.pta__row{display:grid; grid-template-columns:3fr 1.2fr; gap:var(--sp-2); align-items:center}
+.pta__head{font-size:10px; letter-spacing:.5px; color:var(--muted); text-transform:uppercase; padding-bottom:6px; border-bottom:1px solid var(--line)}
+.pta__row{padding:8px 0; border-bottom:1px solid var(--line)}
+.pta__row:last-child{border-bottom:0}
+.pta__row>span:first-child{min-width:0; overflow:hidden; text-overflow:ellipsis}
+.pta__row>span:last-child{text-align:right; white-space:nowrap; font-weight:var(--fw-m); color:var(--text)}
+
+/* ============================== COMPONENTES ============================== */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); box-shadow:var(--sh-1)}
+.card+.card{margin-top:var(--sp-3)}
+.card__head{
+  display:flex; align-items:center; gap:var(--sp-2);
+  padding:var(--sp-3) var(--sp-4);
+  background:var(--surface-3); border-bottom:1px solid var(--line);
+  border-radius:var(--r-md) var(--r-md) 0 0;
+  font-weight:var(--fw-b);
+}
+.card__body{padding:var(--sp-4)}
+.section-title{font-size:var(--fs-xl); font-weight:var(--fw-b); margin-bottom:var(--sp-3)}
+
+.accent-bar{border-left:6px solid var(--accent); padding-left:var(--sp-3)}
+
+.pill{
+  display:inline-block; padding:3px 8px; border-radius:var(--r-pill);
+  font-size:10px; font-weight:var(--fw-b); color:#fff; white-space:nowrap;
+}
+.pills{display:flex; flex-wrap:wrap; gap:6px}
+
+.dots{display:flex; flex-wrap:wrap; gap:4px; align-items:center; min-height:10px}
+.dot{width:10px; height:10px; border-radius:50%; display:inline-block}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+  min-height:var(--tap); padding:0 var(--sp-4);
+  border:1px solid var(--line); border-radius:var(--r-md);
+  background:var(--surface); color:var(--text); cursor:pointer; font-weight:var(--fw-m);
+}
+.btn--primary{background:var(--accent); border-color:var(--accent); color:#fff}
+.btn--ghost{background:transparent}
+.btn:hover{filter:brightness(.97)}
+
+.grid{display:grid; gap:var(--sp-3)}
+.grid--2{grid-template-columns:repeat(2,1fr)}
+.grid--3{grid-template-columns:repeat(3,1fr)}
+
+.fbar{display:grid; grid-template-columns:repeat(2,1fr); gap:var(--sp-2)}
+.field{
+  display:block; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-sm); padding:var(--sp-2) var(--sp-3); text-align:left; cursor:pointer;
+}
+.field__k{display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+.field__v{display:flex; justify-content:space-between; align-items:center; font-size:var(--fs-sm); font-weight:var(--fw-m)}
+.field--active{border-color:var(--sem-informativo); box-shadow:0 0 0 1px var(--sem-informativo) inset}
+
+.kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:var(--sp-3); text-align:center}
+.kpi__n{font-size:var(--fs-2xl); font-weight:var(--fw-b); line-height:1.1}
+.kpi__l{font-size:var(--fs-xs); color:var(--muted)}
+
+.stub{display:flex; flex-direction:column; gap:var(--sp-3); padding:var(--sp-5); text-align:center; color:var(--text-2)}
+.stub__tag{font-size:var(--fs-xs); text-transform:uppercase; letter-spacing:1px; color:var(--muted)}
+
+#toast-root{position:fixed; left:50%; bottom:calc(var(--nav-h) + 20px); transform:translateX(-50%); z-index:60; display:flex; flex-direction:column; gap:8px}
+.toast{background:#212121; color:#fff; padding:10px 16px; border-radius:var(--r-pill); box-shadow:var(--sh-2); font-size:var(--fs-sm)}
+
+.modal__backdrop{position:fixed; inset:0; background:rgba(16,24,40,.45); z-index:50; display:flex; align-items:center; justify-content:center; padding:var(--sp-4)}
+.modal{background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--sh-3); width:100%; max-width:440px; overflow:hidden}
+.modal__head{display:flex; align-items:center; justify-content:space-between; padding:var(--sp-3) var(--sp-4); border-bottom:1px solid var(--line)}
+.modal__body{padding:var(--sp-4)}
+.modal__foot{padding:var(--sp-3) var(--sp-4); display:flex; justify-content:center; gap:var(--sp-3)}
+
+/* ============================== ESCRITORIO (secundario) ============================== */
+/* Se activa cuando <html data-layout="desktop"> (por ancho o por el toggle). */
+html[data-layout="desktop"] .app{
+  display:grid;
+  grid-template-columns:var(--sidebar-w) 1fr;
+  grid-template-rows:auto 1fr;
+  grid-template-areas:"side top" "side view";
+  min-height:100dvh; max-width:none;
+}
+html[data-layout="desktop"] .topbar{
+  grid-area:top;
+  min-height:auto; border-radius:0; box-shadow:none;
+  padding:var(--sp-2) var(--sp-6) 0;
+}
+html[data-layout="desktop"] .hero__name{font-size:var(--fs-xl)}
+/* Logo Efecto Áncash 75% más grande en PC (base móvil: 30px) */
+html[data-layout="desktop"] .hero__logoimg{height:52.5px; max-width:210px}
+html[data-layout="desktop"] .view-head{
+  margin:calc(-1 * var(--sp-5)) calc(-1 * var(--sp-6)) var(--sp-5);
+  padding:var(--sp-3) var(--sp-6);
+}
+html[data-layout="desktop"] .jump{grid-template-columns:repeat(6,1fr)}
+html[data-layout="desktop"] .metrics{grid-template-columns:1fr 1fr 1.4fr}
+html[data-layout="desktop"] .view{
+  grid-area:view; padding:var(--sp-5) var(--sp-6) var(--sp-6);
+}
+html[data-layout="desktop"] .nav{
+  grid-area:side; position:sticky; top:0; left:auto; right:auto; bottom:auto;
+  height:100dvh; width:var(--sidebar-w);
+  flex-direction:column; align-items:stretch; justify-content:flex-start; gap:2px;
+  padding:var(--sp-4) var(--sp-3); border-top:0; border-right:1px solid var(--line);
+  box-shadow:none;
+}
+html[data-layout="desktop"] .nav__item{
+  flex-direction:row; justify-content:flex-start; gap:var(--sp-3);
+  padding:var(--sp-2) var(--sp-3); width:100%;
+}
+/* Orden del SIDEBAR en escritorio (arriba→abajo). El DOM conserva el orden de la barra
+   inferior (móvil), así que aquí se reordena solo con `order` — sin tocar el HTML ni la
+   navegación por deslizamiento. Orden pedido: Inicio · Actividades · Reportes ·
+   Incidencias · Indicadores · Historial · Calendario. */
+html[data-layout="desktop"] .nav__item[data-route="#/portada"]    {order:1}
+html[data-layout="desktop"] .nav__item[data-route="#/actividades"] {order:2}
+html[data-layout="desktop"] .nav__item[data-route="#/reportes"]    {order:3}
+html[data-layout="desktop"] .nav__item[data-route="#/incidencias"] {order:4}
+html[data-layout="desktop"] .nav__item[data-route="#/indicadores"] {order:5}
+html[data-layout="desktop"] .nav__item[data-route="#/historial"]   {order:6}
+html[data-layout="desktop"] .nav__item[data-route="#/calendario"]  {order:7}
+html[data-layout="desktop"] .nav__item[aria-current="page"]{background:color-mix(in srgb,var(--accent) 12%,white)}
+html[data-layout="desktop"] .nav__label{font-size:var(--fs-sm)}
+html[data-layout="desktop"] .grid--2{grid-template-columns:repeat(4,1fr)}
+html[data-layout="desktop"] .grid--3{grid-template-columns:repeat(6,1fr)}
+html[data-layout="desktop"] .fbar{grid-template-columns:repeat(5,1fr)}
+/* dos columnas de contenido en escritorio para listas + detalle */
+html[data-layout="desktop"] .split{display:grid; grid-template-columns:1.4fr 1fr; gap:var(--sp-4); align-items:start}
+
+/* ============================== PORTADA DE ACCESO (login) ============================== */
+/* Foto de portada a pantalla completa; logo efecto Áncash (blanco) arriba
+   y bloque de usuario + contraseña + Ingresar abajo. */
+html[data-auth="login"]{background:#0B120F}
+html[data-auth="login"] body{background:#0B120F}
+html[data-auth="login"] .app{display:block; background:#0B120F; max-width:none; min-height:100dvh}
+html[data-auth="login"] .view{padding:0; padding-bottom:0; display:flex}
+/* Ojo: .nav/.topbar traen display:flex propio, así que [hidden] no basta para ocultarlos */
+html[data-auth="login"] #topbar,
+html[data-auth="login"] .nav{display:none !important}
+
+.login-stage{
+  position:relative; isolation:isolate;
+  flex:1; width:100%; min-height:100dvh;
+  display:flex; flex-direction:column; justify-content:space-between; gap:var(--sp-5);
+  padding:calc(env(safe-area-inset-top,0px) + var(--sp-6)) var(--sp-4)
+          calc(env(safe-area-inset-bottom,0px) + var(--sp-5));
+  background:#0B120F url("../assets/portada-login.jpg") center center / cover no-repeat;
+}
+/* Velo para asegurar contraste del formulario y del logo sobre la foto */
+.login-stage::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(5,11,9,.68) 0%, rgba(5,11,9,.18) 28%, rgba(5,11,9,0) 46%),
+    linear-gradient(0deg, rgba(5,11,9,.92) 0%, rgba(5,11,9,.66) 24%, rgba(5,11,9,0) 56%);
+}
+.login-stage__top{display:flex; justify-content:center; align-items:center}
+/* Logo efecto Áncash (versión clara): 60px base × 1.8 = 108px (ampliado 80%) */
+.login-stage__logo{height:108px; width:auto; max-width:86%; display:block;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.55))}
+
+.login{
+  width:100%; max-width:420px; margin:0 auto;
+  display:flex; flex-direction:column; gap:6px;
+  background:rgba(8,14,12,.42); border:1px solid rgba(255,255,255,.16);
+  border-radius:var(--r-lg); padding:var(--sp-4);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.login__lbl{font-size:var(--fs-xs); color:rgba(255,255,255,.86); font-weight:var(--fw-b); letter-spacing:.2px}
+.login__inp{height:46px; border:1px solid rgba(255,255,255,.24); border-radius:var(--r-sm);
+  padding:0 var(--sp-3); font-size:var(--fs-md); background:rgba(255,255,255,.10); color:#fff}
+.login__inp::placeholder{color:rgba(255,255,255,.68)}
+.login__inp:focus{outline:2px solid var(--aguamarina); outline-offset:1px; background:rgba(255,255,255,.16)}
+.login__btn{margin-top:var(--sp-3); height:48px; font-weight:var(--fw-b); font-size:var(--fs-md);
+  background:var(--aguamarina); border-color:var(--aguamarina); color:#06322C}
+.login__btn:hover{filter:brightness(1.06)}
+.login__btn:disabled{opacity:.75; cursor:default}
+.login__remember{display:flex; align-items:center; gap:8px; font-size:var(--fs-sm);
+  color:rgba(255,255,255,.85); margin-top:2px}
+.login__err{background:rgba(138,28,28,.88); color:#fff; border:1px solid rgba(255,255,255,.28);
+  border-radius:var(--r-sm); padding:8px 10px; font-size:var(--fs-sm)}
+.login__note{margin-top:var(--sp-2); font-size:var(--fs-xs); color:rgba(255,255,255,.7); text-align:center}
+
+/* ---------- PORTADA DE ACCESO · ESCRITORIO (PC) ----------
+   Foto horizontal a pantalla completa, logo claro ARRIBA-IZQUIERDA
+   y bloque usuario+contraseña ABAJO-IZQUIERDA. */
+html[data-layout="desktop"] .login-stage{
+  background:#0B120F url("../assets/portada-login-pc.jpg") center center / cover no-repeat;
+  align-items:flex-start;
+  padding-top:calc(env(safe-area-inset-top,0px) + var(--sp-5));
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + var(--sp-6));
+  padding-left:clamp(24px, 5vw, 88px);
+  padding-right:clamp(24px, 5vw, 88px);
+}
+html[data-layout="desktop"] .login-stage::before{
+  background:
+    linear-gradient(90deg, rgba(5,11,9,.82) 0%, rgba(5,11,9,.55) 32%, rgba(5,11,9,.14) 60%, rgba(5,11,9,0) 100%),
+    linear-gradient(180deg, rgba(5,11,9,.55) 0%, rgba(5,11,9,0) 34%),
+    linear-gradient(0deg, rgba(5,11,9,.6) 0%, rgba(5,11,9,0) 42%);
+}
+html[data-layout="desktop"] .login-stage__top{justify-content:flex-start; align-items:flex-start}
+/* Logo PC: 1.5x sobre el móvil (108 → 162px). max-width:none evita que el % lo
+   comprima en el contenedor flex de ancho ajustado (el logo salía "aplastado"). */
+html[data-layout="desktop"] .login-stage__logo{height:240px; width:auto; max-width:none; flex:0 0 auto}
+html[data-layout="desktop"] .login{margin:0; width:100%; max-width:380px;
+  background:rgba(8,14,12,.5)}
+@media (max-width:380px){ .login-stage__logo{height:94px} }
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+
+/* ================= 4.1 "Programación" (detalle de una actividad grande) =================
+   Spec: la-especificacion/webapp3.md — cabecera turquesa, bloque "Agregar nueva actividad",
+   filtros Responsable/Estado, tarjetas con barra de título, Lugar/Responsable/Fecha y pie con
+   punto de estado + píldora de estado (píldora = botón que abre el Reporte 4.2). */
+.prog-head{display:flex; align-items:center; gap:var(--sp-3); width:100%; min-width:0}
+.prog-back{width:38px; height:38px; flex:0 0 auto; padding:0; border:0; border-radius:50%;
+  background:rgba(255,255,255,.38); color:#fff; display:grid; place-items:center; cursor:pointer}
+.prog-back:active{background:rgba(255,255,255,.55)}
+.prog-head__txt{flex:1; min-width:0}
+.prog-head__t{display:block; font-size:var(--fs-md); font-weight:var(--fw-b); color:#0B1F26;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.prog-head__s{display:block; font-size:var(--fs-xs); font-weight:var(--fw-m); color:#0F4C45;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.prog-head__est{width:30px; height:30px; flex:0 0 auto; border-radius:50%;
+  box-shadow:inset 0 0 0 7px rgba(255,255,255,.34)}
+
+.prog-add{display:flex; flex-direction:column; align-items:center; gap:6px; width:100%;
+  margin-top:var(--sp-3); padding:var(--sp-4); cursor:pointer;
+  background:var(--surface-3); color:#5A6E7F; border:1px dashed #90A4AE; border-radius:var(--r-md)}
+.prog-add:hover{background:color-mix(in srgb,var(--surface-3) 70%,#fff)}
+.prog-add__txt{font-size:var(--fs-sm); font-weight:var(--fw-m)}
+.prog-add__ico{width:34px; height:34px; display:grid; place-items:center; background:#fff;
+  border:1px solid #90A4AE; border-radius:8px; color:#546E7A}
+
+.prog-filtros{display:grid; grid-template-columns:1fr 1fr auto; gap:var(--sp-2); margin-top:var(--sp-3)}
+.prog-sel{display:block; min-width:0}
+.prog-sel select{width:100%; background:#fff; border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:9px 10px; font-size:var(--fs-sm); color:var(--text)}
+.prog-clear{width:38px; height:38px; border-radius:50%; border:1px solid var(--line);
+  background:var(--surface-3); color:#5A6E7F; font-size:15px; cursor:pointer}
+
+.prog-list{display:grid; gap:var(--sp-3); margin-top:var(--sp-3)}
+.prog-card{display:block; background:#fff; border:1px solid var(--line); border-left:6px solid #38A344;
+  border-radius:var(--r-md); overflow:hidden; box-shadow:var(--sh-1)}
+.prog-card[hidden]{display:none}
+.prog-card__head{background:#A2C9D9; color:#1E293B; font-weight:var(--fw-b); font-size:var(--fs-sm);
+  padding:8px var(--sp-3)}
+.prog-card__body{padding:var(--sp-3)}
+.prog-card__lugar{font-size:var(--fs-sm); font-weight:var(--fw-b); color:#1E293B; line-height:1.35}
+.prog-card__fila{font-size:var(--fs-sm); color:#475569; margin-top:4px}
+.prog-card__foot{display:flex; align-items:center; justify-content:flex-end; gap:8px;
+  padding:0 var(--sp-3) var(--sp-3)}
+.prog-dot{width:12px; height:12px; border-radius:50%; display:inline-block}
+.prog-card--click{cursor:pointer; transition:box-shadow .12s ease, transform .12s ease}
+.prog-card--click:hover{box-shadow:var(--sh-2)}
+.prog-card--click:active{transform:scale(.995)}
+.prog-card--click:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+.prog-pill{border:0; color:#fff; font-size:11px; font-weight:var(--fw-m); padding:3px 10px;
+  border-radius:8px; cursor:pointer}
+html[data-layout="desktop"] .prog-list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+
+/* ================= 4.2 Reporte (móvil · spec Cristofher 17-sep-2026) ================= */
+.rep-circle{width:34px;height:34px;border-radius:50%;border:0;background:#fff;color:#6B2D8B;
+  font-size:17px;line-height:1;display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;flex:0 0 auto;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.rep-circle--save{background:rgba(255,255,255,.20);color:#fff;font-size:14px}
+.rep-circle:active{transform:scale(.94)}
+.rep-headtxt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.15;color:#fff}
+.rep-headtxt b{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rep-headtxt span{font-size:11px;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rep-ctx{background:#fff;border:1px solid #E2E8F0;border-radius:var(--r-md);padding:12px;
+  font-size:12px;color:#1E293B;display:grid;gap:3px;line-height:1.35}
+.rep-field{margin-top:var(--sp-4)}
+.rep-lbl{display:block;font-size:13px;font-weight:700;color:#1E293B;margin-bottom:6px}
+.rep-ta{width:100%;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px;
+  font:inherit;font-size:13px;color:#1E293B;resize:vertical}
+.rep-ta::placeholder{color:#94A3B8}
+.rep-sel{width:100%;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px;
+  font:inherit;font-size:13px;color:#1E293B;margin-bottom:var(--sp-3)}
+.rep-counters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}
+.rep-counters>*{min-width:0}
+.rep-otros{margin-top:var(--sp-3)}
+.rep-inp{display:block;width:100%;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;
+  padding:10px;font:inherit;font-size:13px;color:#1E293B}
+.rep-inp::placeholder{color:#94A3B8}
+.rep-count__k{display:block;font-size:12px;color:#475569;margin-bottom:4px}
+.rep-count__c{display:flex;align-items:center;background:#F8FAFC;border:1px solid #E2E8F0;
+  border-radius:10px;overflow:hidden}
+.rep-count__c input{flex:1;min-width:0;border:0;background:transparent;text-align:center;
+  font:inherit;font-size:15px;color:#1E293B;padding:9px 0;appearance:textfield}
+.rep-count__c input::-webkit-outer-spin-button,
+.rep-count__c input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.rep-count__btns{display:flex;flex-direction:column;border-left:1px solid #E2E8F0}
+.rep-count__btns button{border:0;background:#fff;color:#6B2D8B;font-size:9px;line-height:1;
+  padding:3px 9px;cursor:pointer}
+.rep-count__btns button:first-child{border-bottom:1px solid #E2E8F0}
+.rep-switch{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);
+  background:#F1F5F9;border-radius:10px;padding:12px;margin-top:var(--sp-4)}
+.rep-switch>span{font-size:13px;font-weight:700;color:#1E293B}
+.rep-sw{position:relative;display:inline-block;flex:0 0 auto}
+.rep-sw input{position:absolute;opacity:0;width:0;height:0}
+.rep-sw__ui{display:block;width:44px;height:24px;border-radius:999px;background:#CBD5E1;
+  transition:background .15s}
+.rep-sw__ui::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;
+  border-radius:50%;background:#fff;transition:transform .15s}
+.rep-sw input:checked+.rep-sw__ui{background:#6B2D8B}
+.rep-sw input:checked+.rep-sw__ui::after{transform:translateX(20px)}
+.rep-caso{margin-top:var(--sp-4)}
+.rep-caso__head{display:flex;align-items:center;gap:var(--sp-3);background:#6B2D8B;color:#fff;
+  border-radius:var(--r-md);padding:var(--sp-3)}
+.rep-caso__ctx{background:#F1F5F9;border-radius:10px;padding:10px 12px;margin-top:var(--sp-3);
+  font-size:12px;color:#1E293B;line-height:1.4}
+.rep-tabs{display:flex;background:#F1F5F9;border-radius:10px;padding:4px;margin-top:var(--sp-3)}
+.rep-tab{flex:1;border:0;background:transparent;padding:9px;border-radius:8px;font:inherit;
+  font-size:13px;font-weight:600;color:#475569;cursor:pointer}
+.rep-tab.is-on{background:#6B2D8B;color:#fff}
+.rep-form{margin-top:var(--sp-3)}
+.rep-caps{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--sp-3)}
+.rep-cap{border:1px solid #E2E8F0;background:#fff;color:#475569;border-radius:999px;
+  padding:7px 13px;font:inherit;font-size:12px;cursor:pointer}
+.rep-cap.is-on{background:#6B2D8B;border-color:#6B2D8B;color:#fff}
+.rep-box{border-radius:12px;padding:12px;margin-top:var(--sp-3)}
+.rep-box--nee{background:#F3E8FF}
+.rep-box--inc{background:#FFE4E6}
+.rep-box--gen{background:#EEF2F7}
+.rep-box--gen .rep-box__t{color:#1F3460}
+.rep-box__t{font-size:12px;font-weight:700;margin-bottom:10px}
+.rep-box--nee .rep-box__t{color:#6B2D8B}
+.rep-box--inc .rep-box__t{color:#9F1239}
+.rep-radio{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--sp-3)}
+.rep-radio button{border:1px solid #fff;background:#fff;color:#475569;border-radius:999px;
+  padding:7px 14px;font:inherit;font-size:12px;cursor:pointer}
+.rep-radio button.is-on{background:#6B2D8B;border-color:#6B2D8B;color:#fff}
+
+/* ---------- 4.3 "Nueva actividad" (formulario) ---------- */
+/* Cabecera gris neutra: el <header class="view-head"> lo pinta app.js con var(--accent);
+   mountNueva lo recolorea a --header-gris. Aquí solo el contenido interior. */
+.f43-head{display:flex; align-items:center; gap:var(--sp-3); width:100%; min-width:0}
+.f43-head__back{width:38px; height:38px; flex:0 0 auto; padding:0; border:0; border-radius:50%;
+  background:rgba(255,255,255,.38); color:#fff; display:grid; place-items:center; cursor:pointer}
+.f43-head__back:active{background:rgba(255,255,255,.55)}
+.f43-head__txt{flex:1; min-width:0}
+.f43-head__t{display:block; font-size:var(--fs-md); font-weight:var(--fw-b); color:#0B1F26;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.f43-head__s{display:block; font-size:var(--fs-xs); font-weight:var(--fw-m); color:#1F2933;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.f43-head__u{display:block; font-size:var(--fs-xs); color:rgba(11,31,38,.72); margin-top:1px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+/* Formulario */
+.f43-wrap{width:100%}
+.f43-body{display:grid; gap:var(--sp-3); max-width:640px; margin:0 auto}
+.f43-lbl{display:block; font-size:var(--fs-xs); font-weight:var(--fw-b); color:var(--text-2);
+  letter-spacing:.2px; margin-bottom:4px}
+.f43-input,.f43-sel{width:100%; box-sizing:border-box; background:var(--surface-3);
+  border:1px solid var(--line); border-radius:var(--r-sm); padding:10px var(--sp-3);
+  font:inherit; font-size:var(--fs-sm); color:var(--text)}
+.f43-sel{appearance:none; -webkit-appearance:none; cursor:pointer; padding-right:28px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%236b7280'/></svg>");
+  background-repeat:no-repeat; background-position:right 10px center; background-size:10px 6px}
+.f43-input::placeholder{color:var(--placeholder)}
+.f43-input:focus,.f43-sel:focus{outline:2px solid var(--aguamarina); outline-offset:1px;
+  background:var(--surface); border-color:var(--teal)}
+.f43-input:disabled,.f43-sel:disabled{opacity:.55; cursor:not-allowed}
+
+/* Fecha + día */
+.f43-fecha{display:flex; align-items:center; gap:var(--sp-2)}
+.f43-fecha .f43-input{flex:1 1 auto}
+.f43-dia{flex:0 0 auto; text-transform:capitalize; font-size:var(--fs-xs); font-weight:var(--fw-b);
+  color:var(--teal-dark); background:var(--surface-3); border:1px solid var(--line);
+  border-radius:var(--r-pill); padding:6px 12px; min-width:84px; text-align:center}
+.f43-dia:empty{display:none}
+
+/* Horas */
+.f43-horas{display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-3)}
+.f43-col{display:grid; min-width:0}
+
+/* Participantes */
+.f43-parts{display:grid; gap:2px; max-height:220px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:var(--sp-1) var(--sp-2)}
+.f43-chk{display:flex; align-items:center; gap:var(--sp-2); padding:8px 4px;
+  border-radius:var(--r-sm); cursor:pointer}
+.f43-chk:hover{background:var(--surface-3)}
+.f43-chk input[type=checkbox]{flex:0 0 auto; width:18px; height:18px; accent-color:var(--aguamarina)}
+.f43-chk span{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:var(--fs-sm)}
+.f43-chk input:disabled+span{color:var(--muted)}
+.f43-vacio{display:block; padding:10px 4px; font-size:var(--fs-sm); color:var(--muted)}
+
+/* Switch "Todo el equipo" */
+.f43-switch{display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3);
+  background:var(--surface-3); border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:10px var(--sp-3); cursor:pointer}
+.f43-switch>span{font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--text)}
+.f43-switch input{appearance:none; -webkit-appearance:none; position:relative; flex:0 0 auto;
+  width:44px; height:24px; margin:0; border-radius:var(--r-pill); background:#CBD5E1;
+  cursor:pointer; transition:background .15s}
+.f43-switch input::after{content:""; position:absolute; top:3px; left:3px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s}
+.f43-switch input:checked{background:var(--aguamarina)}
+.f43-switch input:checked::after{transform:translateX(20px)}
+
+.f43-names{display:block; font-size:var(--fs-xs); color:var(--text-2); line-height:1.35}
+
+/* Acciones */
+.f43-save{display:flex; align-items:center; justify-content:center; gap:var(--sp-2);
+  width:100%; min-height:52px; margin-top:var(--sp-4); padding:12px var(--sp-4);
+  background:var(--aguamarina); border:1px solid var(--aguamarina); color:#fff;
+  font:inherit; font-size:var(--fs-md); font-weight:var(--fw-b); letter-spacing:.2px;
+  border-radius:var(--r-md); cursor:pointer; box-shadow:var(--sh-1);
+  transition:background .15s, filter .15s}
+.f43-save:hover{background:var(--teal); border-color:var(--teal)}
+.f43-save:active{filter:brightness(.95)}
+.f43-save:disabled{opacity:.55; cursor:not-allowed}
+.f43-save__ico{display:inline-grid; place-items:center}
+.f43-back{display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  width:100%; margin:var(--sp-2) 0 var(--sp-4); padding:10px; background:none;
+  border:1px solid var(--line); border-radius:var(--r-md); color:var(--text-2);
+  font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-m); cursor:pointer}
+.f43-back:hover{background:var(--surface-3)}
+.f43-back svg{width:18px; height:18px}
+
+@media (max-width:640px){
+  .f43-horas{grid-template-columns:1fr}
+}

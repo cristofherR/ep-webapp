@@ -1,0 +1,87 @@
+/* tokens.css — ÚNICA fuente de verdad de color/tipografía/medidas.
+   Efecto Áncash · WebApp MEL. Cambiar un valor aquí cambia todo el sistema. */
+:root{
+  /* --- Marca / acentos de sección --- */
+  --navy:#1F3460;          /* acceso, instalación, portada */
+  --teal:#0E7C70;          /* marca / nav activo / indicadores */
+  --teal-dark:#01696F;     /* reportes */
+  --aguamarina:#18C2AD;    /* encabezados 4.x */
+  --morado:#6B3293;        /* incidencias / alertas / reporte */
+  --header-gris:#A9AFB3;   /* encabezados neutros */
+  --icono:#808080;         /* iconos de nav (inactivo) */
+
+  /* --- Superficies / texto --- */
+  --bg:#F4F5F7;
+  --surface:#FFFFFF;
+  --surface-2:#FAFAFB;
+  --surface-3:#ECEFF1;
+  --line:#E3E6EA;
+  --line-2:#E0E0E0;
+  --text:#212121;
+  --text-2:#5B6472;
+  --muted:#6b7280;
+  --placeholder:#757575;
+
+  /* --- Estados de actividad GRANDE --- */
+  --est-programado:#0077a8;
+  --est-ejecucion:#8a6500;
+  --est-completado:#437a22;
+  --est-reprogramado:#5c3d8f;
+  --est-noejecutado:#c0392b;
+
+  /* --- Estados de SUB-actividad (punto) --- */
+  --sub-ejecutado:#437a22;
+  --sub-reprogramado:#8e44ad;
+  --sub-cancelado:#000000;
+  --sub-vencida3:#c0392b;
+  --sub-vencida:#e07000;
+  --sub-pendiente:#cccccc;
+  --mes-badge:#009684;        /* etiqueta 'Mes' del POA */
+
+  /* --- Semáforo (NivelSemáforo) --- */
+  --sem-informativo:#2d6cdf;
+  --sem-leve:#e0a700;
+  --sem-moderado:#e07000;
+  --sem-urgente:#c0392b;
+  --sem-prioritario:#8e0000;
+
+  /* --- UGT --- */
+  --ugt-mina:#666666;
+  --ugt-sanmarcos:#2e6b1a;
+  --ugt-huallanca:#e07000;
+  --ugt-vallefortaleza:#6ab84a;
+  --ugt-huarmey:#28b0b0;
+  --ugt-huaripampa:#8a6500;
+  --ugt-region:#c06080;
+  --ugt-otro:#888888;         /* UGT sin mapeo */
+
+  /* --- Componentes (PROG-* / ECO-*) --- */
+  --prog-0:#455a64; --prog-1:#1a4f7a; --prog-2:#6a1b9a; --prog-3:#00695c; --prog-4:#e65100;
+  --prog-5:#ad1457; --prog-6:#0277bd; --prog-7:#2e7d32; --prog-8:#6d4c41; --prog-9:#00838f;
+  --eco-1:#558b2f; --eco-2:#4527a0; --eco-3:#c62828;
+
+  /* --- Tipografía --- */
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --fs-xs:12px; --fs-sm:13px; --fs-md:15px; --fs-lg:18px; --fs-xl:22px; --fs-2xl:28px;
+  --fw-r:400; --fw-m:600; --fw-b:700;
+  --lh:1.4;
+
+  /* --- Espaciado / radios / sombras --- */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:999px;
+  --sh-1:0 1px 2px rgba(16,24,40,.06);
+  --sh-2:0 4px 16px rgba(16,24,40,.10);
+  --sh-3:0 10px 30px rgba(16,24,40,.18);
+
+  /* --- Layout / navegación --- */
+  --topbar-h:56px;
+  --nav-h:64px;
+  --sidebar-w:248px;
+  --content-max:1200px;
+  --tap:44px;              /* área táctil mínima */
+  --nav-icon:25px;         /* icono de nav base */
+  --nav-icon-active:31.6px; /* +26.5% (15% + 10% pedido) */
+
+  /* --- Acento de sección (lo sobreescribe app.js) --- */
+  --accent:var(--teal);
+}
